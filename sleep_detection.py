@@ -9,9 +9,11 @@ import imutils
 import time
 import dlib
 import cv2
-import playsound
-import os, random
+import pyttsx3
 
+engine = pyttsx3.init()
+rate = engine.getProperty('rate')
+engine.setProperty('rate',rate - 50)
 
 def eye_aspect_ratio(eye):
     A = dist.euclidean(eye[1], eye[5])
@@ -41,7 +43,7 @@ ap.add_argument("-v", "--video", type=str, default="",
 args = vars(ap.parse_args())
 
 EYE_AR_THRESH = 0.23  #threshold for blink
-EYE_AR_CONSEC_FRAMES = 50 #consecutive considered true
+EYE_AR_CONSEC_FRAMES = 23 #consecutive considered true
 sleep_flag = 0
 yawn_flag = 0
 count_mouth = 0
@@ -95,13 +97,15 @@ while True:
         cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
         cv2.drawContours(frame, [mouthHull], -1, (0, 255, 0), 1)
 
-        if mouthEAR > 25:
+        if mouthEAR > 30:
             count_mouth += 1
-            if count_mouth >= 10:
+            if count_mouth >= 8:
                 if yawn_flag < 0:
                     print("You are yawning")
                     yawn_flag = 1
                     total_yawn += 1
+                    cv2.putText(frame, "Yawn Detected", (150, 150),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
                 else:
                     yawn_flag = 1
             else:
@@ -116,7 +120,9 @@ while True:
 
             if counter >= EYE_AR_CONSEC_FRAMES:
                 if sleep_flag < 0:
-                    print("You are sleeping")
+                    print("You are sleeping.")
+                    cv2.putText(frame, "Sleep Detected", (150, 150),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
                     sleep_flag = 1
                     total += 1
             else:
@@ -139,11 +145,12 @@ while True:
 			cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
         cv2.putText(frame, "MAR: {:.2f}".format(mouthEAR), (320, 30),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-        # if total > 4 or total_yawn > 4:
-        #     path = 'music'
-        #     files = os.listdir(path)
-        #     play = random.choice(files)
-        #     playsound(os.path.abspath(play))
+        if total+total_yawn > 4:
+            print("playing sound")
+            engine.say("You are sleeping. I recommend you going for a walk or listen to music")
+            engine.runAndWait()
+            total = 0
+            total_yawn = 0
 
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF
