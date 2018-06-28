@@ -43,7 +43,7 @@ ap.add_argument("-v", "--video", type=str, default="",
 args = vars(ap.parse_args())
 
 EYE_AR_THRESH = 0.23  #threshold for blink
-EYE_AR_CONSEC_FRAMES = 23 #consecutive considered true
+EYE_AR_CONSEC_FRAMES = 25 #consecutive considered true
 sleep_flag = 0
 yawn_flag = 0
 count_mouth = 0
@@ -74,7 +74,7 @@ while True:
     #     break
 
     frame = vs.read()
-    frame = imutils.resize(frame, width = 450)
+    frame = imutils.resize(frame, width = 640)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     rects = detector(gray,0)    #dlib’s built-in face detector.
@@ -99,7 +99,7 @@ while True:
 
         if mouthEAR > 30:
             count_mouth += 1
-            if count_mouth >= 8:
+            if count_mouth >= 10:
                 if yawn_flag < 0:
                     print("You are yawning")
                     yawn_flag = 1
@@ -141,9 +141,11 @@ while True:
 
         cv2.putText(frame, "Total Sleeps: {}".format(total), (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-        cv2.putText(frame, "EAR: {:.2f}".format(ear), (180, 30),
+        cv2.putText(frame, "Total Yawns: {}".format(total_yawn), (10, 70),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 30),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-        cv2.putText(frame, "MAR: {:.2f}".format(mouthEAR), (320, 30),
+        cv2.putText(frame, "MAR: {:.2f}".format(mouthEAR), (540, 30),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
         if total+total_yawn > 4:
             print("playing sound")
